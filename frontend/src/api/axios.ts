@@ -6,7 +6,7 @@ const VITE_API_URL = import.meta.env.VITE_API_URL;
 
 // Si estamos en producción y no hay URL definida, lanzamos una advertencia o usamos un string vacío
 // para evitar el error de 'loopback' (localhost) en el navegador del cliente.
-const API_URL = VITE_API_URL || (isProduction ? '' : 'http://localhost:3000/api');
+const API_URL = VITE_API_URL || (isProduction ? '' : 'http://localhost:3005/api');
 
 const axiosInstance = axios.create({
     baseURL: API_URL,
