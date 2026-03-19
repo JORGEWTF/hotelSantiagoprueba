@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model usuario {
+  id       Int        @id @default(autoincrement())
+  nombre   String     @db.VarChar(255)
+  apellido String     @db.VarChar(255)
+  carnet   Int        @unique
+  celular  Int
+  genero   String     @db.VarChar(50)
+  cargo    String     @db.VarChar(100)
+  password String
+  gasto    gasto[]
+  limpieza limpieza[]
+  reserva  reserva[]
+}
+
+model gasto {
+  id         Int     @id @default(autoincrement())
+  usuario_id Int
+  producto   String  @db.VarChar(255)
+  precio     Int
+  fecha      DateTime @default(now())
+  usuario    usuario @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_gasto_usuario")
+}
+
+model habitacion {
+  id              Int        @id @default(autoincrement())
+  numero          Int        @unique
+  piso            Int
+  tipo_habitacion String     @db.VarChar(100)
+  ocupado         Boolean    @default(false)
+  estado          String     @default("Disponible") @db.VarChar(100)
+  limpieza        limpieza[]
+  reserva         reserva[]
+}
+
+model huesped {
+  id                Int      @id @default(autoincrement())
+  nombres           String   @db.VarChar(255)
+  apellidos         String   @db.VarChar(255)
+  carnet            Int      @unique
+  complemento       String?  @db.VarChar(50)
+  celular           Int
+  genero            String   @db.VarChar(50)
+  profesion         String   @db.VarChar(255)
+  fecha_nacimiento  DateTime @db.Date
+  nacionalidad      String   @db.VarChar(100)
+  ciudad_nacimiento String   @db.VarChar(100)
+  estado_civil      String   @db.VarChar(50)
+  nivel             Int
+  dias_visitado     Int
+
+  lista_negra       lista_negra[]
+  // Relación corregida: Un huésped puede aparecer en muchos detalles de reserva
+  reservas_detalles detalle_reserva_huesped[]
+}
+
+model limpieza {
+  id            Int        @id @default(autoincrement())
+  usuario_id    Int
+  habitacion_id Int
+  fecha_hora    DateTime   @db.Timestamp(6)
+  observacion   String?    @db.VarChar(255)
+  habitacion    habitacion @relation(fields: [habitacion_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_limpieza_habitacion")
+  usuario       usuario    @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_limpieza_usuario")
+}
+
+model lista_negra {
+  id         Int      @id @default(autoincrement())
+  huesped_id Int
+  motivo     String   @db.VarChar(255)
+  fecha      DateTime @default(now()) @db.Date
+  huesped    huesped  @relation(fields: [huesped_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_lista_negra_huesped")
+}
+
+model reserva {
+  id                Int       @id @default(autoincrement())
+  usuario_id        Int
+  habitacion_id     Int
+  
+  // Fechas de la estancia
+  fecha_entrada     DateTime  @db.Date
+  fecha_salida      DateTime  @db.Date
+  
+  // Horas específicas (Check-in / Check-out real)
+  hora_entrada      DateTime? @db.Time(6)
+  hora_salida       DateTime? @db.Time(6)
+  
+  cantidad_personas Int?
+  
+  // Montos monetarios
+  adelanto          Int       @default(0)
+  ingreso           Int       @default(0)
+  total             Int       @default(0) 
+  
+  // Métodos de pago
+  metodo_adelanto   String?   @db.VarChar(100)
+  metodo_ingreso    String?   @db.VarChar(100)
+  
+  // Información adicional
+  observacion       String?   @db.VarChar(255)
+
+  // Relaciones
+  habitacion        habitacion @relation(fields: [habitacion_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuario           usuario    @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  huespedes_detalle detalle_reserva_huesped[]
+}
+
+model detalle_reserva_huesped {
+  id         Int     @id @default(autoincrement())
+  reserva_id Int
+  huesped_id Int
+  es_titular Boolean @default(false)
+
+  reserva    reserva @relation(fields: [reserva_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  huesped    huesped @relation(fields: [huesped_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
