@@ -24,6 +24,6 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Configuración de Nginx para SPA (React Router)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 80
+EXPOSE 5175
 
 CMD ["nginx", "-g", "daemon off;"]

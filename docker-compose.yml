@@ -43,7 +43,7 @@ services:
     container_name: hotel_frontend
     restart: always
     ports:
-      - "80:80"
+      - "5175:5175"
     depends_on:
       - backend
 
